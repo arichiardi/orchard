@@ -1,9 +1,8 @@
 (ns orchard.meta-test
   (:require
-   [orchard.meta :as m]
-   [clojure.java.classpath]
-   [clojure.repl :as repl]
-   [clojure.test :refer :all]))
+   #?(:clj [clojure.java.classpath])
+   [clojure.test :as test #?(:clj :refer :cljs :refer-macros) [deftest is are testing use-fixtures]]
+   [orchard.meta :as m]))
 
 (deftest merge-meta-test
   (testing "Always safe and preserves object"
@@ -73,13 +72,14 @@
   (testing "Returns nil for unknown symbol"
     (is (nil? (m/special-sym-meta 'unknown)))))
 
-(deftest var-meta-test
-  ;; Test files can't be found on the class path.
-  (is (:file (m/var-meta #'m/var-meta)))
-  (is (re-find #"java\.classpath"
-               (:file (#'m/maybe-add-file
-                       {:ns (find-ns 'clojure.java.classpath)}))))
-  (is (not (re-find #"/form-init[^/]*$"
-                    (:file (m/var-meta
-                            (eval '(do (in-ns 'clojure.java.classpath)
-                                       (def pok 10)))))))))
+#?(:clj
+   (deftest var-meta-test
+     ;; Test files can't be found on the class path.
+     (is (:file (m/var-meta #'m/var-meta)))
+     (is (re-find #"java\.classpath"
+                  (:file (#'m/maybe-add-file
+                          {:ns (find-ns 'clojure.java.classpath)}))))
+     (is (not (re-find #"/form-init[^/]*$"
+                       (:file (m/var-meta
+                               (eval '(do (in-ns 'clojure.java.classpath)
+                                          (def pok 10))))))))))

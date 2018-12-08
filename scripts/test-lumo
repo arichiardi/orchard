@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+set -eu
+
+cp=$(lein with-profile cljs-self-host classpath)
+
+lumo -sf -c "$cp" -m orchard.cljs.test-runner

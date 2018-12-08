@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+set -eu
+
+# useful for checking the dependency tree
+# lein trampoline with-profile cljs,1.9 deps :tree
+
+lein trampoline with-profile cljs,1.9,test-refresh test-refresh $@

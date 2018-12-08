@@ -15,7 +15,8 @@
 
   :test-selectors {:java9 (complement :java9-excluded)}
 
-  :aliases {"bump-version" ["change" "version" "leiningen.release/bump-version"]}
+  :aliases {"bump-version" ["change" "version" "leiningen.release/bump-version"]
+            "test-watch" ["trampoline" "with-profile" "1.9,cljs,test" "test-refresh"]}
 
   :release-tasks [["vcs" "assert-committed"]
                   ["bump-version" "release"]
@@ -39,7 +40,29 @@
                                       "https://oss.sonatype.org/content/repositories/snapshots"]]
                       :dependencies [[org.clojure/clojure "1.11.0-master-SNAPSHOT"]]}
 
+             :cljs {:dependencies [[org.clojure/tools.reader "1.3.2"] ;; otherwise we have java.lang.IllegalAccessError: reader-error does not exist
+                                   [org.clojure/clojurescript "1.10.439" :exclusions [org.clojure/tools.reader]]]
+                    :global-vars {*assert* true}}
+
+             :cljs-self-host {:resource-paths ["src" "test"]
+                              :exclusions [org.clojure/clojure org.clojure/clojurescript]
+                              :dependencies [[andare "0.9.0" :scope "test"]
+                                             ;; mount is self-host compatible so better for testing
+                                             [mount "0.1.15" :scope "test"]]
+                              :global-vars {*assert* true}}
+
              :sysutils {:plugins [[lein-sysutils "0.2.0"]]}
+
+             ;; DEV tools
+             :test {:dependencies [[pjstadig/humane-test-output "0.9.0"]
+                                   [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
+                                   ;; mount is self-host compatible so choosen for testing
+                                   [mount "0.1.15" :scope "test"]]
+                    :resource-paths ["test-resources"]
+                    :plugins [[com.jakemccrary/lein-test-refresh "0.23.0"]]
+                    :injections [(require 'pjstadig.humane-test-output)
+                                 (pjstadig.humane-test-output/activate!)]
+                    :test-refresh {:changes-only true}}
 
              ;; CI tools
              :codox {:plugins [[lein-codox "0.10.3"]]
